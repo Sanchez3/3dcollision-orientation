@@ -31,7 +31,7 @@ class Game {
         renderer.setSize(wWidth, wHeight);
         document.body.appendChild(renderer.domElement);
 
-        camera.position.set(0, 1, 10);
+        camera.position.set(-50, 50, 50);
         camera.lookAt(scene.position);
         // scene.add(camera);
         scene.add(camera);
