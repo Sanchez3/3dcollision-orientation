@@ -5,17 +5,7 @@ import TweenMax from 'gsap'
 import * as CANNON from 'cannon'
 
 import * as THREE from 'three'
-
-window.THREE = THREE || {};
-// import { OrbitControls, DeviceOrientationControls } from 'three'
-import OrbitControls from './OrbitControls.js';
-import DeviceOrientationControls from './DeviceOrientationControls.js';
-// import LegacyJSONLoader from './LegacyJSONLoader.js'
-// import 'three-orbit-controls'
-
-// import OrbitControls from 'three/examples/js/controls/OrbitControls.js'
-// import DeviceOrientationControls from 'three/examples/js/controls/DeviceOrientationControls.js'
-// import {LegacyJSONLoader} from 'three/examples/js/loaders/deprecated/LegacyJSONLoader.js'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
 
 class Game {
@@ -24,7 +14,7 @@ class Game {
     }
     init() {
         var that = this;
-        
+
         var wWidth = window.innerWidth;
         var wHeight = window.innerHeight;
 
@@ -35,8 +25,8 @@ class Game {
         scene.fog = new THREE.Fog(0x000000, 500, 10000);
         scene.add(new THREE.GridHelper(1000, 100));
         scene.add(new THREE.AxesHelper(20));
-        var camera = new THREE.PerspectiveCamera(30, wWidth / wHeight, 0.5, 10000);
-   
+        var camera = new THREE.PerspectiveCamera(75, wWidth / wHeight, 0.5, 10000);
+
         var renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true })
         renderer.setSize(wWidth, wHeight);
         document.body.appendChild(renderer.domElement);
@@ -50,17 +40,7 @@ class Game {
         light.castShadow = true;
         var d = 20;
         light.position.set(d, d, d);
-        light.shadowMapWidth = 1024;
-        light.shadowMapHeight = 1024;
 
-        light.shadowCameraLeft = -d;
-        light.shadowCameraRight = d;
-        light.shadowCameraTop = d;
-        light.shadowCameraBottom = -d;
-
-        light.shadowCameraFar = 3 * d;
-        light.shadowCameraNear = d;
-        light.shadowDarkness = 0.5;
         scene.add(light);
 
 
@@ -68,13 +48,10 @@ class Game {
         var airplaneContainer = new THREE.Object3D();
         var objCopy = new THREE.Object3D();
         scene.add(airplaneContainer, boatContainer);
-        var orbitControls = new THREE.OrbitControls(camera, document.getElementById('canvas-element'))
-        // orbitControls.minDistance = 75;
-        // orbitControls.maxDistance = 300;
-        // orbitControls.enablePan = false;
-        // orbitControls.target.set(0, 0, 0);
-        // orbitControls.enableRotate = false
-        orbitControls.update()
+        var orbitcontrols = new OrbitControls(camera, renderer.domElement)
+        // controls.enableDamping = true
+        // controls.dampingFactor = 0.25
+        // controls.enableZoom = false
 
         var controls, physicsWorld;
         var sphereBodys = [];
@@ -120,6 +97,42 @@ class Game {
             // var boatGeo = threeAssets['boat'];
             physicsWorld = new CANNON.World()
             physicsWorld.gravity.set(0, -10, 0);
+
+            function renderTxt(x, y, z) {
+                var p = document.getElementsByTagName('span');
+                p[0].innerHTML = x;
+                p[1].innerHTML = y;
+                p[2].innerHTML = z;
+            }
+            window.addEventListener("devicemotion", function(event) {
+                // 处理event.alpha、event.beta及event.gamma
+                renderTxt(event.accelerationIncludingGravity.x, event.accelerationIncludingGravity.y, event.accelerationIncludingGravity.z)
+                physicsWorld.gravity.set(event.accelerationIncludingGravity.x, event.accelerationIncludingGravity.y, event.accelerationIncludingGravity.z);
+            }, true);
+
+            function onClick() {
+                alert(1)
+                if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                    DeviceMotionEvent.requestPermission()
+                        .then(permissionState => {
+                            if (permissionState === 'granted') {
+                                window.addEventListener("devicemotion", function(event) {
+                                    // 处理event.alpha、event.beta及event.gamma
+                                    renderTxt(event.accelerationIncludingGravity.x, event.accelerationIncludingGravity.y, event.accelerationIncludingGravity.z)
+                                    physicsWorld.gravity.set(event.accelerationIncludingGravity.x, event.accelerationIncludingGravity.y, event.accelerationIncludingGravity.z);
+                                }, true);
+                            }
+                        })
+                        .catch(console.error);
+                } else {
+                    // handle regular non iOS 13+ devices
+                }
+            }
+
+            document.getElementById('text').addEventListener('click', onClick.bind(this));
+
+
+
 
             var sphereShape = new CANNON.Sphere(1)
             for (var i = 9; i >= 0; i--) {
@@ -183,15 +196,9 @@ class Game {
                 scene.add(cubeMesh);
             }
         }
-        var objectLoader = new THREE.LegacyJSONLoader(manager);
-        objectLoader.load('/assets/models/airplane.json', function(rs) {
-            threeAssets['airplane'] = rs;
-        });
-        objectLoader.load('/assets/models/boat.json', function(rs) {
-            threeAssets['boat'] = rs;
-        });
+
         var textureLoader = new THREE.TextureLoader(manager);
-        textureLoader.load('/assets/models/color.jpg', function(rs) {
+        textureLoader.load('/assets/favicon.ico', function(rs) {
             threeAssets['color'] = rs;
         });
 
@@ -199,19 +206,7 @@ class Game {
 
 
 
-        var THREE_TEXTURE = PIXI.BaseTexture.fromCanvas(renderer.domElement, PIXI.SCALE_MODES.LINEAR);
-        var THREE_SPRITE = new PIXI.Sprite.from(new PIXI.Texture(THREE_TEXTURE));
-        app.stage.addChild(THREE_SPRITE);
 
-        var game0 = new PIXI.Container();
-        game0.scale.set(window.cfg.scale);
-        app.stage.addChild(game0);
-        var gameS = new PIXI.Sprite.fromImage('g0-s0');
-        gameS.anchor.set(0.5, 0);
-        gameS.x = window.cfg.swidth * 0.5;
-        gameS.y = window.cfg.sheight * 0.19;
-
-        game0.addChild(gameS)
         window.addEventListener('resize', onWindowResize, false);
 
         function onWindowResize() {
@@ -223,8 +218,8 @@ class Game {
 
         var animate = function() {
             requestAnimationFrame(animate);
-            if (controls) {
-                controls.update();
+            if (orbitcontrols) {
+                orbitcontrols.update();
             }
             if (physicsWorld) {
                 physicsWorld.step(1 / 60)
@@ -242,7 +237,6 @@ class Game {
                 }
             }
             renderer.render(scene, camera);
-            THREE_TEXTURE.update();
         };
         animate();
 

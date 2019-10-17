@@ -8,7 +8,9 @@ body {
   overflow: hidden;
   font-family: "Helvetica Neue", Helvetica, Arial, "Microsoft Yahei", "Hiragino Sans GB", "Heiti SC", "WenQuanYi Micro Hei";
 }
-
+.text{
+  font-size: 0.2rem;
+}
 /*canvas {
   display: block;
   cursor: none;
