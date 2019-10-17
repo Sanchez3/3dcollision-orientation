@@ -22,7 +22,7 @@ class Game {
         var airplaneMesh, boatMesh;
         var app = that.app;
         var scene = new THREE.Scene();
-        scene.fog = new THREE.Fog(0x000000, 500, 10000);
+        // scene.fog = new THREE.Fog(0x000000, 500, 10000);
         scene.add(new THREE.GridHelper(1000, 100));
         scene.add(new THREE.AxesHelper(20));
         var camera = new THREE.PerspectiveCamera(75, wWidth / wHeight, 0.5, 10000);
@@ -31,15 +31,14 @@ class Game {
         renderer.setSize(wWidth, wHeight);
         document.body.appendChild(renderer.domElement);
 
-        camera.position.set(0, 30, 20);
+        camera.position.set(0, 1, 10);
         camera.lookAt(scene.position);
         // scene.add(camera);
         scene.add(camera);
-        scene.add(new THREE.AmbientLight(0x666666));
-        var light = new THREE.DirectionalLight(0xffffff, 1.75);
-        light.castShadow = true;
-        var d = 20;
-        light.position.set(d, d, d);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        var light = new THREE.DirectionalLight(0xffffff, 0.35);
+        light.position.set(1, 1, 1).normalize();
 
         scene.add(light);
 
@@ -54,20 +53,18 @@ class Game {
         // controls.enableZoom = false
 
         var controls, physicsWorld;
-        var sphereBodys = [];
-        var cubeBodys = [];
-        var spheres = [];
-        var cubes = [];
-        var ground;
-        var groundBody;
+        var cubeBody;
+        var cube;
+        var grounds = [];
+        var groundBodys = [];
 
-        var light = new THREE.AmbientLight(0xffffff); // Soft white light
-        scene.add(light);
+        // var light = new THREE.AmbientLight(0xffffff); // Soft white light
+        // scene.add(light);
 
-        var slight = new THREE.SpotLight(0xffffff);
-        slight.position.set(30, 30, 40);
-        slight.target.position.set(0, 0, 0);
-        slight.castShadow = true;
+        // var slight = new THREE.SpotLight(0xffffff);
+        // slight.position.set(30, 30, 40);
+        // slight.target.position.set(0, 0, 0);
+        // slight.castShadow = true;
 
         var threeAssets = [];
         var manager = new THREE.LoadingManager();
@@ -104,107 +101,134 @@ class Game {
                 p[1].innerHTML = y;
                 p[2].innerHTML = z;
             }
-            window.addEventListener("devicemotion", function(event) {
-                // 处理event.alpha、event.beta及event.gamma
-                renderTxt(event.accelerationIncludingGravity.x, event.accelerationIncludingGravity.y, event.accelerationIncludingGravity.z)
-                physicsWorld.gravity.set(event.accelerationIncludingGravity.x, event.accelerationIncludingGravity.y, event.accelerationIncludingGravity.z);
-            }, true);
+            // window.addEventListener("devicemotion", function(event) {
+            //     // 处理event.alpha、event.beta及event.gamma
+            //     renderTxt(event.accelerationIncludingGravity.x, event.accelerationIncludingGravity.y, event.accelerationIncludingGravity.z)
+            //     physicsWorld.gravity.set(event.accelerationIncludingGravity.x, event.accelerationIncludingGravity.y, event.accelerationIncludingGravity.z);
+            // }, true);
 
-            function onClick() {
-                alert(1)
-                if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                    DeviceMotionEvent.requestPermission()
-                        .then(permissionState => {
-                            if (permissionState === 'granted') {
-                                window.addEventListener("devicemotion", function(event) {
-                                    // 处理event.alpha、event.beta及event.gamma
-                                    renderTxt(event.accelerationIncludingGravity.x, event.accelerationIncludingGravity.y, event.accelerationIncludingGravity.z)
-                                    physicsWorld.gravity.set(event.accelerationIncludingGravity.x, event.accelerationIncludingGravity.y, event.accelerationIncludingGravity.z);
-                                }, true);
-                            }
-                        })
-                        .catch(console.error);
-                } else {
-                    // handle regular non iOS 13+ devices
-                }
-            }
+            // function onClick() {
+            //     alert(1)
+            //     if (typeof DeviceMotionEvent.requestPermission === 'function') {
+            //         DeviceMotionEvent.requestPermission()
+            //             .then(permissionState => {
+            //                 if (permissionState === 'granted') {
+            //                     window.addEventListener("devicemotion", function(event) {
+            //                         // 处理event.alpha、event.beta及event.gamma
+            //                         renderTxt(event.accelerationIncludingGravity.x, event.accelerationIncludingGravity.y, event.accelerationIncludingGravity.z)
+            //                         physicsWorld.gravity.set(event.accelerationIncludingGravity.x, event.accelerationIncludingGravity.y, event.accelerationIncludingGravity.z);
+            //                     }, true);
+            //                 }
+            //             })
+            //             .catch(console.error);
+            //     } else {
+            //         // handle regular non iOS 13+ devices
+            //     }
+            // }
 
-            document.getElementById('text').addEventListener('click', onClick.bind(this));
+            // document.getElementById('text').addEventListener('click', onClick.bind(this));
 
-
-
-
-            var sphereShape = new CANNON.Sphere(1)
-            for (var i = 9; i >= 0; i--) {
-                var sphereBody = new CANNON.Body({
-                    mass: 5,
-                    position: new CANNON.Vec3(0, 10, 0),
-                    shape: sphereShape
-                })
-                sphereBody.position.set(Math.random() - 0.5, 2.5 * i + 0.5, Math.random() - 0.5);
-                physicsWorld.add(sphereBody)
-                sphereBodys.push(sphereBody);
-            }
-
-            var cubeShape = new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5));
-            for (var i = 9; i >= 0; i--) {
-                var cubeBody = new CANNON.Body({
-                    mass: 5,
-                    position: new CANNON.Vec3(0, 10, 0),
-                    shape: cubeShape
-                })
-                cubeBody.position.set(Math.random() - 0.5, 2.5 * i + 5.5, Math.random() - 0.5);
-                physicsWorld.add(cubeBody)
-                cubeBodys.push(cubeBody);
-            }
 
 
             var groundShape = new CANNON.Plane()
-            groundBody = new CANNON.Body({
+            // var groundBody0 = new CANNON.Body({
+            //     mass: 0,
+            //     shape: groundShape
+            // })
+            // groundBody0.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2)
+            // groundBody0.position.set(0, -25, 0)
+            // groundBodys.push(groundBody0)
+            // physicsWorld.add(groundBody0)
+
+            // var groundBody1 = new CANNON.Body({
+            //     mass: 0,
+            //     shape: groundShape
+            // })
+            // groundBody1.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2)
+            // groundBody1.position.set(0, 0, 0)
+            // groundBodys.push(groundBody1)
+            // physicsWorld.add(groundBody1)
+
+            var groundBody2 = new CANNON.Body({
                 mass: 0,
                 shape: groundShape
             })
-            // setFromAxisAngle 旋转 X 轴 -90 度
-            groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2)
-            physicsWorld.add(groundBody)
+            groundBody2.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2)
+            groundBody2.position.set(25, 0, 0)
+            groundBodys.push(groundBody2)
+            physicsWorld.add(groundBody2)
+
+            var groundBody3 = new CANNON.Body({
+                mass: 0,
+                shape: groundShape
+            })
+            groundBody3.position.set(-25, 0, 0)
+            groundBody3.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2)
+            groundBodys.push(groundBody3)
+            physicsWorld.add(groundBody3)
+
+            // var groundBody4 = new CANNON.Body({
+            //     mass: 0,
+            //     shape: groundShape
+            // })
+            // // groundBody4.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 0, 1), -Math.PI / 2)
+            // groundBody4.position.set(0, 0, -25)
+            // groundBodys.push(groundBody4)
+            // physicsWorld.add(groundBody4)
+
+            // var groundBody5 = new CANNON.Body({
+            //     mass: 0,
+            //     shape: groundShape
+            // })
+            // groundBody5.position.set(0, 0, 25)
+            // groundBodys.push(groundBody5)
+            // physicsWorld.add(groundBody5)
+
+            var cubeShape = new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5));
+            cubeBody = new CANNON.Body({
+                mass: 5,
+                position: new CANNON.Vec3(0, 5, 0),
+                shape: cubeShape
+            })
+            cubeBody.position.set(Math.random() - 0.5, 2.5 * 1 + 5.5, Math.random() - 0.5);
+            var quaternion0 = new THREE.Quaternion();
+            // quaternion0.setFromAxisAngle(new THREE.Vector3(1, 1, 0), Math.PI / 2);
+            cubeBody.quaternion.copy(quaternion0)
+            physicsWorld.add(cubeBody)
+
+            var ctime = 0;
+            cubeBody.addEventListener("collide", function(e) {
+                console.log("The sphere just collided with the ground!");
+                console.log("Collided with body:", e.body);
+                console.log("Contact between bodies:", e.contact);
+                ctime++;
+                document.getElementById('ctimes').innerHTML = ctime;
+            });
 
             // 平面网格
-            var groundGeometry = new THREE.PlaneGeometry(100, 100, 1, 1);
-            var groundMaterial = new THREE.MeshLambertMaterial({ color: 0x777777 });
-            ground = new THREE.Mesh(groundGeometry, groundMaterial)
-            // ground.rotation.set(-Math.PI / 2, 0, 0)
-            ground.castShadow = true;
-            ground.receiveShadow = true;
-            scene.add(ground)
-            // 球网格
-            var sphereGeometry = new THREE.SphereGeometry(1, 32, 32)
-            var sphereMaterial = new THREE.MeshStandardMaterial({ color: 0x888888 })
-            for (var i = 10 - 1; i >= 0; i--) {
-                var sphereMesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
-                sphereMesh.castShadow = true;
-                spheres.push(sphereMesh);
-                scene.add(sphereMesh);
-            }
+            var groundGeometry = new THREE.PlaneGeometry(50, 50, 1, 1);
+            // var groundMaterial = new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff });
 
+            for (let i = 0; i < 2; i++) {
+                var groundMaterial = new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff });
+                var ground = new THREE.Mesh(groundGeometry, groundMaterial)
+                ground.castShadow = true;
+                ground.receiveShadow = true;
+                grounds.push(ground)
+                scene.add(ground)
+            }
 
             var cubeGeometry = new THREE.BoxGeometry(1, 1, 1, 10, 10);
-            var cubeMaterial = new THREE.MeshPhongMaterial({ color: 0x888888 });
-            for (var i = 10 - 1; i >= 0; i--) {
-                var cubeMesh = new THREE.Mesh(cubeGeometry, sphereMaterial);
-                cubeMesh.castShadow = true;
-                cubes.push(cubeMesh);
-                scene.add(cubeMesh);
-            }
+            var cubeMaterial = new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff });
+            cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+            cube.castShadow = true;
+            scene.add(cube);
         }
 
         var textureLoader = new THREE.TextureLoader(manager);
         textureLoader.load('/assets/favicon.ico', function(rs) {
             threeAssets['color'] = rs;
         });
-
-
-
-
 
 
         window.addEventListener('resize', onWindowResize, false);
@@ -224,74 +248,19 @@ class Game {
             if (physicsWorld) {
                 physicsWorld.step(1 / 60)
             }
-            if (spheres.length) {
-                ground.position.copy(groundBody.position);
-                ground.quaternion.copy(groundBody.quaternion);
-                for (var i = 9; i >= 0; i--) {
-                    (function(k) {
-                        spheres[k].position.copy(sphereBodys[k].position)
-                        spheres[k].quaternion.copy(sphereBodys[k].quaternion)
-                        cubes[k].position.copy(cubeBodys[k].position)
-                        cubes[k].quaternion.copy(cubeBodys[k].quaternion)
-                    })(i)
+            if (grounds.length) {
+                cube.position.copy(cubeBody.position)
+                cube.quaternion.copy(cubeBody.quaternion)
+                for (let i = 0; i < groundBodys.length; i++) {
+                    // console.log(i)
+                    grounds[i].position.copy(groundBodys[i].position);
+                    grounds[i].quaternion.copy(groundBodys[i].quaternion);
                 }
+
             }
             renderer.render(scene, camera);
         };
         animate();
-
-        //Web Work
-        // // Parameters
-        // var dt = 1/60, N=40;
-
-        // // Data arrays. Contains all our kinematic data we need for rendering.
-        // var positions = new Float32Array(N*3);
-        // var quaternions = new Float32Array(N*4);
-
-        // // Create a blob for the inline worker code
-        // var blob = new Blob([document.querySelector('#worker1').textContent],{type:'text/javascript'});
-
-        // // Create worker
-        // var worker = new Worker(window.URL.createObjectURL(blob));
-        // worker.postMessage = worker.webkitPostMessage || worker.postMessage;
-
-        // var sendTime; // Time when we sent last message
-        // worker.onmessage = function(e) {
-
-        //     // Get fresh data from the worker
-        //     positions = e.data.positions;
-        //     quaternions = e.data.quaternions;
-
-        //     // Update rendering spheres
-        //     for(var i=0; i!==spheres.length; i++){
-        //         spheres[i].position.set( positions[3*i+0],
-        //                                 positions[3*i+1],
-        //                                 positions[3*i+2] );
-        //         spheres[i].quaternion.set(quaternions[4*i+0],
-        //                                  quaternions[4*i+1],
-        //                                  quaternions[4*i+2],
-        //                                  quaternions[4*i+3]);
-        //     }
-
-        //     // If the worker was faster than the time step (dt seconds), we want to delay the next timestep
-        //     var delay = dt * 1000 - (Date.now()-sendTime);
-        //     if(delay < 0){
-        //         delay = 0;
-        //     }
-        //     setTimeout(sendDataToWorker,delay);
-        // }
-
-        // function sendDataToWorker(){
-        //     sendTime = Date.now();
-        //     worker.postMessage({
-        //         N : N,
-        //         dt : dt,
-        //         cannonUrl : document.location.href.replace(/\/[^/]*$/,"/") + "../build/cannon.js",
-        //         positions : positions,
-        //         quaternions : quaternions
-        //     },[positions.buffer, quaternions.buffer]);
-        // }
-        // sendDataToWorker();
 
     }
     create() {
